@@ -1,0 +1,10 @@
+{
+	"Retries": 1,
+	"ServeNodes": [
+		"dns://127.0.0.1:15353?dns=https-chain://1.1.1.1/dns-query",
+		"red://:1081"
+	],
+	"ChainNodes": [
+		"https://user:password@1.2.3.4:443?peer=/opt/gost/peer.txt"
+	]
+}
