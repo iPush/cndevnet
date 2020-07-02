@@ -1,4 +1,4 @@
-A tunnel framework for Linux Router
+Qiangguo - A Tunnel Framework for Linux Router
 =========================================
 
 ## Base Requirements
