@@ -7,10 +7,9 @@ Wants=network.target
 Type=simple
 User=root
 Group=root
-PIDFile=/run/gost.pid
-ExecStart=/opt/gost/gost -C /opt/gost/config.json
-ExecStartPre=/opt/gost/pre-start.sh
-ExecStopPost=/opt/gost/post-stop.sh
+ExecStart=/opt/tunnel/gost/gost -C /opt/tunnel/gost/config.json
+ExecStartPre=/opt/tunnel/pre-start.sh
+ExecStopPost=/opt/tunnel/post-stop.sh
 Restart=on-failure
 
 [Install]

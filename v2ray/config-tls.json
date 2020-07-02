@@ -1,0 +1,56 @@
+{
+  "inbounds": [
+    {
+      "port": 1082, 
+      "protocol": "socks", 
+      "settings": {
+        "auth": "noauth"
+      }
+    },
+    {
+      "port": 1081, 
+      "protocol": "dokodemo-door", 
+      "settings": {
+        "network": "tcp",
+        "timeout": 30,
+        "followRedirect": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vmess",
+      "settings": {
+        "vnext": [
+          {
+            "address": "2.your-server.com",
+            "port": 8443,
+            "users": [
+              {
+                "id": "709b0916-078c-2cb8-019a-abca87457192",
+                "alterId": 64
+              }
+            ]
+          },
+          {
+            "address": "1.your-server.com",
+            "port": 8443,
+            "users": [
+              {
+                "id": "709b0916-078c-2cb8-019a-abca87457192",
+                "alterId": 64
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+	      "network": "h2",
+	      "httpSettings": { 
+		      "path": "/qiangguo"
+	      },
+	      "security": "tls"
+      }
+    }
+  ]
+}

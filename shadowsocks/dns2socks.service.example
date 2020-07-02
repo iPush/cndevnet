@@ -1,0 +1,14 @@
+[Unit]
+Description=dns2socks
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Restart=on-failure
+RestartSec=5s
+ExecStart=/opt/tunnel/shadowsocks/dns2socks 127.0.0.1:1082 1.1.1.1:53 127.0.0.1:15353 
+
+[Install]
+WantedBy=multi-user.target

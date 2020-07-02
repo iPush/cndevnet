@@ -1,0 +1,15 @@
+[Unit]
+Description=V2Ray Service
+After=network.target
+Wants=network.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+PIDFile=/run/v2ray.pid
+ExecStart=/opt/tunnel/v2ray/v2ray -config /opt/v2ray/v2ray/config.json
+ExecStartPre=/opt/tunnel/pre-start.sh
+ExecStopPost=/opt/tunnel/post-stop.sh
+Restart=on-failure
+RestartPreventExitStatus=23

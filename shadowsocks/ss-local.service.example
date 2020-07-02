@@ -1,0 +1,15 @@
+[Unit]
+Description=ss-local
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/opt/tunnel/shadowsocks/ss-local -c /opt/tunnelshadowsocks/ss-local.conf
+Restart=on-failure
+RestartPreventExitStatus=23
+
+[Install]
+WantedBy=multi-user.target
