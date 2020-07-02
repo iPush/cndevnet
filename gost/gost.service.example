@@ -7,9 +7,9 @@ Wants=network.target
 Type=simple
 User=root
 Group=root
-ExecStart=/opt/tunnel/gost/gost -C /opt/tunnel/gost/config.json
-ExecStartPre=/opt/tunnel/pre-start.sh
-ExecStopPost=/opt/tunnel/post-stop.sh
+ExecStart=/opt/qiangguo/gost/gost -C /opt/qiangguo/gost/config.json
+ExecStartPre=/opt/qiangguo/pre-start.sh
+ExecStopPost=/opt/qiangguo/post-stop.sh
 Restart=on-failure
 
 [Install]

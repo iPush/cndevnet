@@ -7,7 +7,7 @@ Wants=network.target
 Type=simple
 User=root
 Group=root
-ExecStart=/opt/tunnel/shadowsocks/ss-local -c /opt/tunnelshadowsocks/ss-local.conf
+ExecStart=/opt/qiangguo/shadowsocks/ss-local -c /opt/qiangguo/shadowsocks/ss-local.conf
 Restart=on-failure
 RestartPreventExitStatus=23
 

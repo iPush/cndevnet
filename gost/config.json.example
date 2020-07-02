@@ -5,6 +5,6 @@
 		"red://:1081"
 	],
 	"ChainNodes": [
-		"https://user:password@1.2.3.4:443?peer=/opt/tunnel/gost/peer.txt"
+		"https://user:password@1.2.3.4:443?peer=/opt/qiangguo/gost/peer.txt"
 	]
 }
