@@ -1,4 +1,8 @@
-TUNNEL for Linux Systemd Based Router
-=====================================
+A tunnel framework for Linux Router
+=========================================
 
-todo
+## Base Requirements
+
+* ipset
+* iptables
+* systemd
