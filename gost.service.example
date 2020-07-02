@@ -1,0 +1,17 @@
+[Unit]
+Description=Gost Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+PIDFile=/run/gost.pid
+ExecStart=/opt/gost/gost -C /opt/gost/config.json
+ExecStartPre=/opt/gost/pre-start.sh
+ExecStopPost=/opt/gost/post-stop.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
