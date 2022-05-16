@@ -1,0 +1,12 @@
+{
+    "Retries": 1,
+    "Debug": false,
+    "ServeNodes": [
+        "red://:12345",
+        "socks5://127.0.0.1:1080",
+        "http://127.0.0.1:1087"
+    ],
+    "ChainNodes": [
+        "wss://gost:q5nsCagytnS83bX@cndevnet.0x00ff00.net:443?path=/ws"
+    ]
+}

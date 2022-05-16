@@ -16,4 +16,4 @@ cd "$TMPDIR" && make smartdns
 mv *.china.smartdns.conf "${WORKDIR}/smartdns"
 
 echo "Cleaning up..."
-rm -r "$TMPDIR"
+rm -rf "$TMPDIR"
