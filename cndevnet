@@ -27,11 +27,6 @@ start_proxy_tcp() {
     iptables -t nat -A CNDEVNET -d 224.0.0.0/4 -j RETURN
     iptables -t nat -A CNDEVNET -d 240.0.0.0/4 -j RETURN
 
-    # Ignore tls DNS Server
-    iptables -t nat -A CNDEVNET -d 1.1.1.1/32 -j RETURN
-    iptables -t nat -A CNDEVNET -d 8.8.4.4/32 -j RETURN
-    iptables -t nat -A CNDEVNET -d 9.9.9.9/32 -j RETURN
-
     # Ignore China IP
     iptables -t nat -A CNDEVNET -p tcp -m set --match-set chnroute dst -j RETURN
 
