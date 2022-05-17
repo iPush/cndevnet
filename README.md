@@ -1,6 +1,6 @@
 # cndevnet
 
-一个国内开发者可以试试的网络工具。使用 cndevnet 就不用在再费心折腾 pip/npm/golang/flutter 等等源无法访问的问题了，
+一个国内开发者可以试试的网络工具，cndevnet 帮助开发者，尤其是初学者不用再费心折腾 pip/npm/golang/flutter 等等源无法访问的问题。
 
 ## 背景
 
