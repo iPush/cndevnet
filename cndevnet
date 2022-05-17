@@ -22,8 +22,9 @@ start_proxy_tcp() {
     iptables -t nat -A CNDEVNET -d 224.0.0.0/4 -j RETURN
     iptables -t nat -A CNDEVNET -d 240.0.0.0/4 -j RETURN
 
-    # Ignore Your Server IP
-    # iptables -t nat -A CNDEVNET -d 1.2.3.4/32 -j RETURN
+    # Ignore tls DNS Server
+    iptables -t nat -A CNDEVNET -d 240.0.0.0/4 -j RETURN
+
 
     # Ignore China IP
     iptables -t nat -A CNDEVNET -p tcp -m set --match-set chnroute dst -j RETURN
@@ -98,7 +99,7 @@ stop_proxy_udp() {
     ip route del local default dev lo table 100
 }
 
-init_ipset() {
+create_ipset() {
     ipset destroy chnroute | true
     ipset -N chnroute hash:net | true
     cat chnroute.txt  | xargs -I % sh -c 'ipset add chnroute %'
@@ -127,6 +128,7 @@ update_smartdns_china() {
 
     colorize 1 "Downloading latest configurations..."
     git clone --depth=1 https://gitee.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
+    #git clone --depth=1 https://github.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
 
 
     colorize 1 "Removing old configurations..."
