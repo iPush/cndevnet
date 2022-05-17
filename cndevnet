@@ -1,12 +1,19 @@
 #!/bin/bash -
 
-set -e
-[ -n "$CNDEVNET_DEBUG" ] && set -x
+VER=1.0.0
 
-colorize() {
-  if [ -t 1 ]; then printf "\e[%sm%s\e[m" "$1" "$2"
-  else echo -n "$2"
-  fi
+PROJECT_NAME="cndevnet"
+
+PROJECT_ENTRY="cndevnet"
+
+PROJECT="https://github.com/lewangdev/$PROJECT_NAME"
+
+INSTALL_HOME="$HOME/.$PROJECT_NAME"
+
+startswith() {
+  _str="$1"
+  _sub="$2"
+  echo "$_str" | grep -- "^$_sub" >/dev/null 2>&1
 }
 
 start_proxy_tcp() {
@@ -23,8 +30,9 @@ start_proxy_tcp() {
     iptables -t nat -A CNDEVNET -d 240.0.0.0/4 -j RETURN
 
     # Ignore tls DNS Server
-    iptables -t nat -A CNDEVNET -d 240.0.0.0/4 -j RETURN
-
+    iptables -t nat -A CNDEVNET -d 1.1.1.1/32 -j RETURN
+    iptables -t nat -A CNDEVNET -d 8.8.4.4/32 -j RETURN
+    iptables -t nat -A CNDEVNET -d 9.9.9.9/32 -j RETURN
 
     # Ignore China IP
     iptables -t nat -A CNDEVNET -p tcp -m set --match-set chnroute dst -j RETURN
@@ -37,10 +45,6 @@ start_proxy_tcp() {
 
     # All tcp output to CNDEVNET
     iptables -t nat -A OUTPUT -p tcp -j CNDEVNET
-
-    # Proxy UDP packet
-    iptables -t mangle -N CNDEVNET
-    iptables -t mangle -N CNDEVNET_LOCAL
 }
 
 stop_proxy_tcp() {
@@ -82,7 +86,7 @@ start_proxy_udp() {
     iptables -t mangle -A PREROUTING -j CNDEVNET
     iptables -t mangle -A OUTPUT -j CNDEVNET_LOCAL
 
-    # IP Table for TProxy
+    # IP Table for TPROXY
     ip rule add fwmark 1 lookup 100
     ip route add local default dev lo table 100
 }
@@ -99,13 +103,11 @@ stop_proxy_udp() {
     ip route del local default dev lo table 100
 }
 
-create_ipset() {
-    ipset destroy chnroute | true
-    ipset -N chnroute hash:net | true
+add_ipset() {
+    ipset -N chnroute hash:net
     cat chnroute.txt  | xargs -I % sh -c 'ipset add chnroute %'
 
-    ipset destroy cfroute | true
-    ipset -N cfroute hash:net | true
+    ipset -N cfroute hash:net
     cat cfroute.txt  | xargs -I % sh -c 'ipset add cfroute %'
 }
 
@@ -130,7 +132,6 @@ update_smartdns_china() {
     git clone --depth=1 https://gitee.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
     #git clone --depth=1 https://github.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
 
-
     colorize 1 "Removing old configurations..."
     rm -f "${WORKDIR}/smartdns/*.china.smartdns.conf" | true
 
@@ -142,10 +143,80 @@ update_smartdns_china() {
     rm -rf "$TMPDIR"
 }
 
-start() {
-
+version() {
+  echo "$PROJECT"
+  echo "v$VER"
 }
 
-stop() {
-
+showhelp() {
+  version
+  echo "Usage: $PROJECT_ENTRY <command> ... [parameters ...]
+Commands:
+  -h, --help               Show this help message.
+  -v, --version            Show version info.
+  -s <start|stop|restart>  Command to start/stop/restart cndevnet.
+"
 }
+
+start_cndevnet() {
+    echo "Starting"
+    docker compose up -d
+    add_ipset
+    start_proxy_tcp
+    echo "cddevnet Started"
+}
+stop_cndevnet() {
+    echo "stopping"
+    docker compose stop
+    destroy_ipset
+    stop_proxy_tcp
+}
+restart_cndevnet() {
+    stop_cndevnet
+    start_cndevnet
+}
+
+process() {
+    _command=''
+    while [ ${#} -gt 0 ]; do
+    case "${1}" in
+    --help | -h)
+      showhelp
+      return
+      ;;
+    --version | -v)
+      version
+      return
+      ;;
+    -s)
+      _command=$2
+      shift
+      ;;
+    esac
+    shift 1
+  done
+
+  if [ "$_command" ]; then
+    case "$_command" in
+    start)
+      start_cndevnet
+      return
+      ;;
+    stop)
+      stop_cndevnet
+      return
+      ;;
+    restart)
+      restart_cndevnet
+      return
+      ;;
+    esac
+  fi
+}
+
+main() {
+  [ -z "$1" ] && showhelp && return
+  if startswith "$1" '-'; then process "$@"; else "$@"; fi
+}
+
+main "$@"

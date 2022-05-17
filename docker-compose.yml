@@ -2,17 +2,18 @@ version: "3"
 
 services:
   gost:
-    image: ginuerzh/gost:lastest
+    image: ginuerzh/gost
     restart: always
     command: -C /gost/config.json
     ports:
-      - 12345:12345
+      - 12345:12345/tcp
+      - 12345:12345/udp
       - 1080:1080/tcp
       - 1087:1087/tcp
     volumes:
       - ./gost:/gost
   smartdns:
-    image: ghostry/smartdns:lastest
+    image: ghostry/smartdns
     restart: always
     ports:
       - 53:53
