@@ -8,8 +8,6 @@ PROJECT_ENTRY="cndevnet"
 
 PROJECT="https://github.com/lewangdev/$PROJECT_NAME"
 
-INSTALL_HOME="$HOME/.$PROJECT_NAME"
-
 startswith() {
   _str="$1"
   _sub="$2"
@@ -128,18 +126,18 @@ update_smartdns_china() {
     WORKDIR="${PWD}"
     TMPDIR="$(mktemp -d)"
 
-    colorize 1 "Downloading latest configurations..."
+    echo "Downloading latest configurations..."
     git clone --depth=1 https://gitee.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
     #git clone --depth=1 https://github.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
 
-    colorize 1 "Removing old configurations..."
+    echo "Removing old configurations..."
     rm -f "${WORKDIR}/smartdns/*.china.smartdns.conf" | true
 
-    colorize 1 "Installing new configurations..."
+    echo "Installing new configurations..."
     cd "$TMPDIR" && make smartdns
     mv *.china.smartdns.conf "${WORKDIR}/smartdns"
 
-    colorize 1 "Cleaning up..."
+    echo "Cleaning up..."
     rm -rf "$TMPDIR"
 }
 
@@ -152,9 +150,12 @@ showhelp() {
   version
   echo "Usage: $PROJECT_ENTRY <command> ... [parameters ...]
 Commands:
-  -h, --help               Show this help message.
-  -v, --version            Show version info.
-  -s <start|stop|restart>  Command to start/stop/restart cndevnet.
+  -h, --help                 Show this help message.
+  -v, --version              Show version info.
+  -s <start|stop|restart>    Command to start/stop/restart cndevnet.
+  --update-cfroute           Update Cloudflare IP range.
+  --update-chnroute          Update China IP range.
+  --update-smartdns-china    Update China domain list.
 "
 }
 
@@ -186,6 +187,18 @@ process() {
       ;;
     --version | -v)
       version
+      return
+      ;;
+    --update-cfroute)
+      update_cfroute
+      return
+      ;;
+    --update-chnroute)
+      update_chnroute
+      return
+      ;;
+    --update-smartdns-china)
+      update_smartdns_china
       return
       ;;
     -s)

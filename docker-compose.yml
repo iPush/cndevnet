@@ -5,17 +5,12 @@ services:
     image: ginuerzh/gost
     restart: always
     command: -C /gost/config.json
-    ports:
-      - 12345:12345/tcp
-      - 12345:12345/udp
-      - 1080:1080/tcp
-      - 1087:1087/tcp
+    network_mode: "host"
     volumes:
       - ./gost:/gost
   smartdns:
     image: ghostry/smartdns
     restart: always
-    ports:
-      - 53:53
+    network_mode: "host"
     volumes:
       - ./smartdns:/smartdns
