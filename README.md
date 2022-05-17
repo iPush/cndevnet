@@ -168,7 +168,6 @@ git config --global http.proxy 'socks5://127.0.0.1:1080'
 git config --global https.proxy 'socks5://127.0.0.1:1080'
 ```
 
-## 视频教程
+## 问题反馈
 
-
-* [小码哥的 YouTube 频道](https://www.youtube.com/channel/UCCplvOAql3tou-cyjxxXfqw)
+[Issues](https://github.com/lewangdev/cndevnet/issues)
