@@ -3,6 +3,6 @@
 docker run -d \
 	-p 53:53/udp \
 	--restart=always \
-	--name cndevtun-smartdns \
+	--name cndevnet-smartdns \
 	-v ${PWD}/smartdns:/smartdns \
 	ghostry/smartdns

@@ -1,0 +1,149 @@
+#!/bin/bash -
+
+set -e
+[ -n "$CNDEVNET_DEBUG" ] && set -x
+
+colorize() {
+  if [ -t 1 ]; then printf "\e[%sm%s\e[m" "$1" "$2"
+  else echo -n "$2"
+  fi
+}
+
+start_proxy_tcp() {
+    iptables -t nat -N CNDEVNET | true
+
+    # Ignore LANs and  reserved addresses.
+    iptables -t nat -A CNDEVNET -d 0.0.0.0/8 -j RETURN
+    iptables -t nat -A CNDEVNET -d 10.0.0.0/8 -j RETURN
+    iptables -t nat -A CNDEVNET -d 172.16.0.0/12 -j RETURN
+    iptables -t nat -A CNDEVNET -d 192.168.0.0/16 -j RETURN
+    iptables -t nat -A CNDEVNET -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A CNDEVNET -d 169.254.0.0/16 -j RETURN
+    iptables -t nat -A CNDEVNET -d 224.0.0.0/4 -j RETURN
+    iptables -t nat -A CNDEVNET -d 240.0.0.0/4 -j RETURN
+
+    # Ignore Your Server IP
+    # iptables -t nat -A CNDEVNET -d 1.2.3.4/32 -j RETURN
+
+    # Ignore China IP
+    iptables -t nat -A CNDEVNET -p tcp -m set --match-set chnroute dst -j RETURN
+
+    # Ignore Cloudflare IP
+    iptables -t nat -A CNDEVNET -p tcp -m set --match-set cfroute dst -j RETURN
+
+    # Anything else should be redirected to port 12345
+    iptables -t nat -A CNDEVNET -p tcp -j REDIRECT --to-ports 12345
+
+    # All tcp output to CNDEVNET
+    iptables -t nat -A OUTPUT -p tcp -j CNDEVNET
+
+    # Proxy UDP packet
+    iptables -t mangle -N CNDEVNET
+    iptables -t mangle -N CNDEVNET_LOCAL
+}
+
+stop_proxy_tcp() {
+    iptables -t nat -D OUTPUT -p tcp -j CNDEVNET
+    iptables -t nat -F CNDEVNET 
+    iptables -t nat -X CNDEVNET
+}
+
+start_proxy_udp() {
+    # Proxy UDP packet
+    iptables -t mangle -N CNDEVNET
+    iptables -t mangle -N CNDEVNET_LOCAL
+
+    # Ignore LANs and  reserved addresses.
+    iptables -t mangle -A CNDEVNET -d 127.0.0.0/8 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET -d 10.0.0.0/8 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET -d 192.168.0.0/16 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET -d 172.16.0.0/12 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET -d 255.255.255.255/32 -j RETURN
+
+    # Ignore China IP
+    iptables -t mangle -A CNDEVNET -p udp -m set --match-set chnroute dst -j RETURN
+
+    # Ignore Cloudflare IP
+    iptables -t mangle -A CNDEVNET -p udp -m set --match-set cfroute dst -j RETURN
+
+    # Anything else should be redirected to udp port 12345
+    iptables -t mangle -A CNDEVNET -p udp -j TPROXY --on-port 12345 --on-ip 127.0.0.1 --tproxy-mark 1
+
+    # Set TPROXY mark
+    iptables -t mangle -A CNDEVNET_LOCAL -d 127.0.0.0/8 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET_LOCAL -d 10.0.0.0/8 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET_LOCAL -d 192.168.0.0/16 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET_LOCAL -d 172.16.0.0/12 -p udp -j RETURN
+    iptables -t mangle -A CNDEVNET_LOCAL -d 255.255.255.255/32 -j RETURN
+    iptables -t mangle -A CNDEVNET_LOCAL -p udp -j MARK --set-mark 1
+
+    # All udp output to CNDEVNET
+    iptables -t mangle -A PREROUTING -j CNDEVNET
+    iptables -t mangle -A OUTPUT -j CNDEVNET_LOCAL
+
+    # IP Table for TProxy
+    ip rule add fwmark 1 lookup 100
+    ip route add local default dev lo table 100
+}
+
+stop_proxy_udp() {
+    iptables -t mangle -D PREROUTING -j CNDEVNET
+    iptables -t mangle -D OUTPUT -j CNDEVNET_LOCAL
+    iptables -t mangle -F CNDEVNET
+    iptables -t mangle -X CNDEVNET
+    iptables -t mangle -F CNDEVNET_LOCAL
+    iptables -t mangle -X CNDEVNET_LOCAL
+
+    ip rule del fwmark 1 lookup 100
+    ip route del local default dev lo table 100
+}
+
+init_ipset() {
+    ipset destroy chnroute | true
+    ipset -N chnroute hash:net | true
+    cat chnroute.txt  | xargs -I % sh -c 'ipset add chnroute %'
+
+    ipset destroy cfroute | true
+    ipset -N cfroute hash:net | true
+    cat cfroute.txt  | xargs -I % sh -c 'ipset add cfroute %'
+}
+
+destroy_ipset() {
+    ipset destroy chnroute | true
+    ipset destroy cfroute | true
+}
+
+update_cfroute() {
+    curl -skLo cfroute.txt https://www.cloudflare.com/ips-v4
+}
+
+update_chnroute() {
+    curl -skLo chnroute.txt https://raw.githubusercontent.com/17mon/china_ip_list/master/china_ip_list.txt
+}
+
+update_smartdns_china() {
+    WORKDIR="${PWD}"
+    TMPDIR="$(mktemp -d)"
+
+    colorize 1 "Downloading latest configurations..."
+    git clone --depth=1 https://gitee.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
+
+
+    colorize 1 "Removing old configurations..."
+    rm -f "${WORKDIR}/smartdns/*.china.smartdns.conf" | true
+
+    colorize 1 "Installing new configurations..."
+    cd "$TMPDIR" && make smartdns
+    mv *.china.smartdns.conf "${WORKDIR}/smartdns"
+
+    colorize 1 "Cleaning up..."
+    rm -rf "$TMPDIR"
+}
+
+start() {
+
+}
+
+stop() {
+
+}

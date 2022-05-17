@@ -2,7 +2,7 @@
 
 docker run -d \
 	--restart unless-stopped \
-	--name cndevtun-gost \
+	--name cndevnet-gost \
 	--network host \
 	-v ${PWD}/gost:/gost \
 	ginuerzh/gost -C /gost/config.json
