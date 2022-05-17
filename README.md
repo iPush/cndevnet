@@ -77,6 +77,8 @@ cd ~/.cndevnet
 
 3. 启动 cndevnet
 
+**请使用 root 用户或者 sudo 命令执行**
+
 ```sh
 sudo ./cndevnet -s start
 
