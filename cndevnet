@@ -123,7 +123,6 @@ update_chnroute() {
 }
 
 update_smartdns_china() {
-    WORKDIR="${PWD}"
     TMPDIR="$(mktemp -d)"
 
     echo "Downloading latest configurations..."
@@ -131,11 +130,11 @@ update_smartdns_china() {
     #git clone --depth=1 https://github.com/felixonmars/dnsmasq-china-list.git "$TMPDIR"
 
     echo "Removing old configurations..."
-    rm -f "${WORKDIR}/smartdns/*.china.smartdns.conf" | true
+    rm -f "${HOME}/.cndevnet/smartdns/*.china.smartdns.conf" | true
 
     echo "Installing new configurations..."
-    cd "$TMPDIR" && make smartdns
-    mv *.china.smartdns.conf "${WORKDIR}/smartdns"
+    cd "$TMPDIR" && make SERVER=china smartdns
+    mv *.china.smartdns.conf "${HOME}/.cndevnet/smartdns"
 
     echo "Cleaning up..."
     rm -rf "$TMPDIR"
